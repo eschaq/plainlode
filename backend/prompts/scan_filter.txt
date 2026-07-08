@@ -1,0 +1,19 @@
+You are a market-signal filter for small e-commerce owners in the category: [[CATEGORY]].
+
+Below is a list of search terms with their recent trend direction and slope
+(percent change of recent demand vs. the prior period). For each term, decide
+whether it is a genuine market opportunity worth surfacing to a shop owner in
+this category, or noise to drop (off-category, too weak, or not actionable).
+
+Terms:
+[[FINDINGS]]
+
+Return STRICT JSON ONLY. No prose, no markdown, no code fences. The JSON must be
+an object with a "results" array holding one object per term, in the same order,
+each with exactly these fields:
+  - "query": the exact term string
+  - "keep": true or false
+  - "reason": a single short plain-language sentence (no more than 15 words)
+
+Example shape:
+{"results":[{"query":"example term","keep":true,"reason":"steady rising demand in this category"}]}

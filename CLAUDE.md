@@ -6,17 +6,29 @@ Read this file at the start of every Claude Code session. Update the Build State
 
 ## Build State (update every session)
 
-**Day 1, July 6.** Day-one spike complete (SOP Phase 3.3):
+**Day 2, July 8, closed.** Build-order step 1 (live scan) DONE, model in the loop.
 
-- Scrapingdog Google Trends TIMESERIES pull: PASS, live and verified (53 timeline points on a real e-commerce query).
-- Rising/related queries via Scrapingdog: not available. The API exposes only TIMESERIES/GEO_MAP/GEO_MAP_0. Deriving "rising" from the TIMESERIES slope instead. This is the concept-lock fallback, now the core path, and it is in-scope core, not creep.
-- Kaggle nicapotato reviews license: CC0-1.0, cleared for the fine-tune corpus (Phase 8 gate, original + MIT-compliant).
-- Fireworks serverless call: parked. Waiting on the automatic $50 credit and a real model id from the launch-day (July 6) revealed list. The placeholder `llama-v3p1-8b-instruct` 404s, which is expected.
+Done:
+- Scan runs end to end: seed -> Scrapingdog pull -> slope rank + volume floor -> AMD-served cheap-tier filter -> typed ScanResult. AMD compute legible in the running product (Track 3 hard gate cleared in code).
+- Scan model: gpt-oss-20b, Fireworks serverless on AMD Instinct. FIREWORKS_MODEL set in .env, key confirmed live.
+- Modules: models.py, trends_client.py, ranker.py, filter.py (real model call, all failure paths keep findings), fireworks_client.py (defensive gpt-oss parse), prompts/scan_filter.txt.
 
-**Current step:** building the live-scan module (`backend/scan/`), build order step 1. The scan is standalone and terminal-testable before any FastAPI route is added. This reorders Phase 4.2 on purpose so the live pull is proven against the real API before an HTTP layer exists.
+Demo LOCKED:
+- Category: back to school. Hero term: school supplies (live riser +25.9%, above floor). Kill signal: seasonal peak late August. Open input for judges; honest "hold, nothing rising" fallback on flat categories.
 
-**Next:** ranker (slope-derived rising), then the scan orchestrator with the cheap-tier model-filter seam (Fireworks serverless, stubbed until the credit lands).
+Conventions:
+- Absolute imports rooted at backend.scan, run from repo root via python -m.
+- Rising derived from TIMESERIES slope. Filter runs only on above-floor findings.
 
+Known limitations (roadmap / hardening, NOT core):
+- Volume floor is batch-relative (Google Trends normalizes each batch to its top term), so a giant term can crush siblings below the floor. Per-term self-normalized volume is a later hardening pass / deeper-scoring creep.
+
+Next session, in order:
+1. Confirm the $100 AMD Developer Cloud credit landed (needed for the LoRA dedicated deployment, per-GPU-hour).
+2. Fine-tune the report-voice LoRA on the CC0 Kaggle corpus, served on a Fireworks dedicated deployment. Spin up for fine-tune/UAT/demo, tear down after.
+3. Wire ScanResult -> fine-tuned voice -> fixed report format (findings / options / recommended action naming the signal that would kill it).
+
+Open: $100 AMD credit approval, LoRA dedicated-deployment path.
 ## Stack (SOP Phase 3.2, with the Phase 1.3 override)
 
 - Backend: FastAPI (Python). Scan data layer is stdlib + `requests`, pandas where it earns it.
