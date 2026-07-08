@@ -24,3 +24,30 @@
 - Wire ScanResult -> fine-tuned voice -> fixed report format (findings / options / recommended action + the signal that would kill it).
 
 Time: ~[fill in] hrs.
+
+## 2026-07-08 (day 3, caught up from lost day 2) — voice fine-tune, serving pivot
+
+### Built / changed
+- finetune/build_dataset.py -> finetune/train.jsonl: 135 category-agnostic SFT examples (15 verticals), voice + format only, no external corpus. Dropped the Kaggle clothing corpus entirely (was biasing voice to one niche).
+- finetune/run_sft.py: uploads dataset (plainlode-voice-v1), launches LoRA SFT via fireworks-ai SDK.
+- First fine-tune: gpt-oss-20b base -> plainlode-voice. Completed. But gpt-oss LoRA requires H100+ dedicated, and H100 capacity was UNAVAILABLE at deploy time. Could not test it.
+- Re-tune launched: base Llama 3.1 8B Instruct -> plainlode-voice-v2 (job plainlode-voice-0d77c), A100-servable.
+
+### Decisions
+- Corpus dropped: fine-tune is category-agnostic hand-built pairs, not Kaggle. CC0 corpus no longer part of the pitch.
+- Voice base = Llama 3.1 8B Instruct (dense 8B, A100-friendly, cheapest tier). Backup: Qwen2.5 14B if 8B reads thin.
+- Serverless LoRA is NOT supported on Fireworks (any base). Fine-tune can only run on a dedicated deployment.
+- Serving ladder for the live URL (weeks-long judging): 1) dedicated A100 fine-tune with masked spin-up + keep-warm, 2) fallback to prompt-engineered voice on serverless gpt-oss (still AMD). Claude API never in the runtime.
+- Gemma prize NOT pursued: all Tunable Gemmas are 26B+, back on the H100 capacity wall. Not worth re-fighting.
+- gpt-oss H100 cold create hit "no capacity"; also cold start too long to fully mask. Reinforces the A100 + fallback plan.
+
+### Gotchas / lessons
+- SDK signatures drift; resolved each by runtime introspection (Dataset.from_file, standalone SFT job not LLM wrapper, fully-qualified accounts/eschachter/models/<name>, accelerator_type required, gpt-oss needs H100+).
+- Dedicated deploy needs an explicit accelerator_type; gpt-oss rejects A100.
+
+### Next (day 4, July 9)
+1. Check plainlode-voice-0d77c completed. Deploy plainlode-voice-v2 on A100, test one back-to-school briefing, tear down. Judge if the voice ships.
+2. Wire ScanResult -> voice -> fixed report format.
+3. Frontend (masked spin-up) + Railway deploy.
+
+Time: ~[fill in] hrs.

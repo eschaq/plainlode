@@ -6,29 +6,36 @@ Read this file at the start of every Claude Code session. Update the Build State
 
 ## Build State (update every session)
 
-**Day 2, July 8, closed.** Build-order step 1 (live scan) DONE, model in the loop.
+**Day 3, July 8, closed.** (Lost day 2 July 7, caught back up.) Scan done; voice re-tuning on a viable base.
 
 Done:
-- Scan runs end to end: seed -> Scrapingdog pull -> slope rank + volume floor -> AMD-served cheap-tier filter -> typed ScanResult. AMD compute legible in the running product (Track 3 hard gate cleared in code).
-- Scan model: gpt-oss-20b, Fireworks serverless on AMD Instinct. FIREWORKS_MODEL set in .env, key confirmed live.
-- Modules: models.py, trends_client.py, ranker.py, filter.py (real model call, all failure paths keep findings), fireworks_client.py (defensive gpt-oss parse), prompts/scan_filter.txt.
+- Live scan end to end: seed -> Scrapingdog pull -> slope rank + volume floor -> AMD-served cheap-tier filter (gpt-oss-20b serverless) -> typed ScanResult. Proven.
+- Demo category LOCKED: back to school, hero term school supplies (live riser). Open input for judges; honest "hold, nothing rising" fallback on flat categories.
+- Voice fine-tune dataset: 135 category-agnostic pairs across 15 verticals (finetune/train.jsonl). Teaches voice + format only. No external corpus.
+- Re-tune launched on Llama 3.1 8B Instruct -> plainlode-voice-v2 (job plainlode-voice-0d77c). A100-servable.
 
-Demo LOCKED:
-- Category: back to school. Hero term: school supplies (live riser +25.9%, above floor). Kill signal: seasonal peak late August. Open input for judges; honest "hold, nothing rising" fallback on flat categories.
+Key constraints learned today:
+- Serverless LoRA NOT supported on Fireworks (any base). Fine-tunes run only on dedicated deployments.
+- gpt-oss LoRA requires H100+; H100 capacity was unavailable at deploy time. That killed the gpt-oss voice path. Llama 3.1 8B runs on A100 (cheaper, more available).
+- Gemma prize dropped: all Tunable Gemmas are 26B+, same H100 capacity wall.
+
+Serving decision for the live URL (weeks-long judging), a ladder:
+1. Dedicated A100 serving plainlode-voice-v2, with masked spin-up (fire the wake at scan start, hide it behind the visible scan) + a keep-warm ping during judging.
+2. Fallback if dedicated is fragile/costly: prompt-engineered voice on serverless gpt-oss. Still Fireworks/AMD, so the hard gate holds.
+Claude API is NEVER in the product runtime. Dev-only.
+v2 enhancement: retrain on a smaller/serverless-eligible base for cheaper always-on serving.
 
 Conventions:
 - Absolute imports rooted at backend.scan, run from repo root via python -m.
 - Rising derived from TIMESERIES slope. Filter runs only on above-floor findings.
+- Fireworks resource ids: your models are accounts/eschachter/models/<name>; base models are accounts/fireworks/models/<name>.
 
-Known limitations (roadmap / hardening, NOT core):
-- Volume floor is batch-relative (Google Trends normalizes each batch to its top term), so a giant term can crush siblings below the floor. Per-term self-normalized volume is a later hardening pass / deeper-scoring creep.
+Next session (day 4, July 9), in order:
+1. Confirm plainlode-voice-0d77c completed. Deploy plainlode-voice-v2 on A100 (NVIDIA_A100_80GB), test one back-to-school briefing, TEAR DOWN. Judge if the voice ships or we fall to prompt-engineered voice.
+2. Wire ScanResult -> voice -> fixed report format (findings / options / recommended action naming the signal that would kill it).
+3. Minimal React frontend with masked spin-up, then Railway deploy.
 
-Next session, in order:
-1. Confirm the $100 AMD Developer Cloud credit landed (needed for the LoRA dedicated deployment, per-GPU-hour).
-2. Fine-tune the report-voice LoRA on the CC0 Kaggle corpus, served on a Fireworks dedicated deployment. Spin up for fine-tune/UAT/demo, tear down after.
-3. Wire ScanResult -> fine-tuned voice -> fixed report format (findings / options / recommended action naming the signal that would kill it).
-
-Open: $100 AMD credit approval, LoRA dedicated-deployment path.
+Credits: ~$100 Fireworks (both $50s), card on file, dedicated deployments unlocked.
 ## Stack (SOP Phase 3.2, with the Phase 1.3 override)
 
 - Backend: FastAPI (Python). Scan data layer is stdlib + `requests`, pandas where it earns it.
