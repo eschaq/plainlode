@@ -1,7 +1,7 @@
 {
   "key": "back-to-school",
   "geo": "US",
-  "pulled_at": "2026-07-09T22:47:56.521832+00:00",
+  "pulled_at": "2026-07-09T23:01:47.675889+00:00",
   "series": [
     {
       "query": "school supplies",
@@ -10,42 +10,42 @@
         {
           "date": "Jul 6\u2009\u2013\u200912, 2025",
           "timestamp": 1751760000,
-          "value": 47
+          "value": 48
         },
         {
           "date": "Jul 13\u2009\u2013\u200919, 2025",
           "timestamp": 1752364800,
-          "value": 60
+          "value": 57
         },
         {
           "date": "Jul 20\u2009\u2013\u200926, 2025",
           "timestamp": 1752969600,
-          "value": 80
+          "value": 78
         },
         {
           "date": "Jul 27\u2009\u2013\u2009Aug 2, 2025",
           "timestamp": 1753574400,
-          "value": 88
+          "value": 87
         },
         {
           "date": "Aug 3\u2009\u2013\u20099, 2025",
           "timestamp": 1754179200,
-          "value": 89
+          "value": 86
         },
         {
           "date": "Aug 10\u2009\u2013\u200916, 2025",
           "timestamp": 1754784000,
-          "value": 63
+          "value": 64
         },
         {
           "date": "Aug 17\u2009\u2013\u200923, 2025",
           "timestamp": 1755388800,
-          "value": 41
+          "value": 42
         },
         {
           "date": "Aug 24\u2009\u2013\u200930, 2025",
           "timestamp": 1755993600,
-          "value": 30
+          "value": 31
         },
         {
           "date": "Aug 31\u2009\u2013\u2009Sep 6, 2025",
@@ -115,7 +115,7 @@
         {
           "date": "Nov 30\u2009\u2013\u2009Dec 6, 2025",
           "timestamp": 1764460800,
-          "value": 12
+          "value": 11
         },
         {
           "date": "Dec 7\u2009\u2013\u200913, 2025",
@@ -125,7 +125,7 @@
         {
           "date": "Dec 14\u2009\u2013\u200920, 2025",
           "timestamp": 1765670400,
-          "value": 10
+          "value": 9
         },
         {
           "date": "Dec 21\u2009\u2013\u200927, 2025",
@@ -150,7 +150,7 @@
         {
           "date": "Jan 18\u2009\u2013\u200924, 2026",
           "timestamp": 1768694400,
-          "value": 12
+          "value": 11
         },
         {
           "date": "Jan 25\u2009\u2013\u200931, 2026",
@@ -170,12 +170,12 @@
         {
           "date": "Feb 15\u2009\u2013\u200921, 2026",
           "timestamp": 1771113600,
-          "value": 16
+          "value": 15
         },
         {
           "date": "Feb 22\u2009\u2013\u200928, 2026",
           "timestamp": 1771718400,
-          "value": 16
+          "value": 15
         },
         {
           "date": "Mar 1\u2009\u2013\u20097, 2026",
@@ -205,12 +205,12 @@
         {
           "date": "Apr 5\u2009\u2013\u200911, 2026",
           "timestamp": 1775347200,
-          "value": 17
+          "value": 16
         },
         {
           "date": "Apr 12\u2009\u2013\u200918, 2026",
           "timestamp": 1775952000,
-          "value": 20
+          "value": 19
         },
         {
           "date": "Apr 19\u2009\u2013\u200925, 2026",
@@ -230,7 +230,7 @@
         {
           "date": "May 10\u2009\u2013\u200916, 2026",
           "timestamp": 1778371200,
-          "value": 24
+          "value": 23
         },
         {
           "date": "May 17\u2009\u2013\u200923, 2026",
@@ -255,7 +255,7 @@
         {
           "date": "Jun 14\u2009\u2013\u200920, 2026",
           "timestamp": 1781395200,
-          "value": 22
+          "value": 26
         },
         {
           "date": "Jun 21\u2009\u2013\u200927, 2026",
@@ -270,7 +270,7 @@
         {
           "date": "Jul 5\u2009\u2013\u200911, 2026",
           "timestamp": 1783209600,
-          "value": 49
+          "value": 50
         }
       ]
     },
@@ -281,27 +281,27 @@
         {
           "date": "Jul 6\u2009\u2013\u200912, 2025",
           "timestamp": 1751760000,
-          "value": 67
+          "value": 66
         },
         {
           "date": "Jul 13\u2009\u2013\u200919, 2025",
           "timestamp": 1752364800,
-          "value": 72
+          "value": 70
         },
         {
           "date": "Jul 20\u2009\u2013\u200926, 2025",
           "timestamp": 1752969600,
-          "value": 80
+          "value": 78
         },
         {
           "date": "Jul 27\u2009\u2013\u2009Aug 2, 2025",
           "timestamp": 1753574400,
-          "value": 89
+          "value": 87
         },
         {
           "date": "Aug 3\u2009\u2013\u20099, 2025",
           "timestamp": 1754179200,
-          "value": 98
+          "value": 93
         },
         {
           "date": "Aug 10\u2009\u2013\u200916, 2025",
@@ -311,17 +311,17 @@
         {
           "date": "Aug 17\u2009\u2013\u200923, 2025",
           "timestamp": 1755388800,
-          "value": 86
+          "value": 91
         },
         {
           "date": "Aug 24\u2009\u2013\u200930, 2025",
           "timestamp": 1755993600,
-          "value": 73
+          "value": 70
         },
         {
           "date": "Aug 31\u2009\u2013\u2009Sep 6, 2025",
           "timestamp": 1756598400,
-          "value": 65
+          "value": 62
         },
         {
           "date": "Sep 7\u2009\u2013\u200913, 2025",
@@ -331,32 +331,32 @@
         {
           "date": "Sep 14\u2009\u2013\u200920, 2025",
           "timestamp": 1757808000,
-          "value": 47
+          "value": 49
         },
         {
           "date": "Sep 21\u2009\u2013\u200927, 2025",
           "timestamp": 1758412800,
-          "value": 44
+          "value": 42
         },
         {
           "date": "Sep 28\u2009\u2013\u2009Oct 4, 2025",
           "timestamp": 1759017600,
-          "value": 40
+          "value": 43
         },
         {
           "date": "Oct 5\u2009\u2013\u200911, 2025",
           "timestamp": 1759622400,
-          "value": 40
+          "value": 39
         },
         {
           "date": "Oct 12\u2009\u2013\u200918, 2025",
           "timestamp": 1760227200,
-          "value": 36
+          "value": 35
         },
         {
           "date": "Oct 19\u2009\u2013\u200925, 2025",
           "timestamp": 1760832000,
-          "value": 37
+          "value": 35
         },
         {
           "date": "Oct 26\u2009\u2013\u2009Nov 1, 2025",
@@ -366,37 +366,37 @@
         {
           "date": "Nov 2\u2009\u2013\u20098, 2025",
           "timestamp": 1762041600,
-          "value": 40
+          "value": 37
         },
         {
           "date": "Nov 9\u2009\u2013\u200915, 2025",
           "timestamp": 1762646400,
-          "value": 44
+          "value": 42
         },
         {
           "date": "Nov 16\u2009\u2013\u200922, 2025",
           "timestamp": 1763251200,
-          "value": 49
+          "value": 51
         },
         {
           "date": "Nov 23\u2009\u2013\u200929, 2025",
           "timestamp": 1763856000,
-          "value": 51
+          "value": 54
         },
         {
           "date": "Nov 30\u2009\u2013\u2009Dec 6, 2025",
           "timestamp": 1764460800,
-          "value": 57
+          "value": 56
         },
         {
           "date": "Dec 7\u2009\u2013\u200913, 2025",
           "timestamp": 1765065600,
-          "value": 60
+          "value": 58
         },
         {
           "date": "Dec 14\u2009\u2013\u200920, 2025",
           "timestamp": 1765670400,
-          "value": 58
+          "value": 59
         },
         {
           "date": "Dec 21\u2009\u2013\u200927, 2025",
@@ -406,57 +406,57 @@
         {
           "date": "Dec 28, 2025\u2009\u2013\u2009Jan 3, 2026",
           "timestamp": 1766880000,
-          "value": 36
+          "value": 40
         },
         {
           "date": "Jan 4\u2009\u2013\u200910, 2026",
           "timestamp": 1767484800,
-          "value": 48
+          "value": 44
         },
         {
           "date": "Jan 11\u2009\u2013\u200917, 2026",
           "timestamp": 1768089600,
-          "value": 51
+          "value": 46
         },
         {
           "date": "Jan 18\u2009\u2013\u200924, 2026",
           "timestamp": 1768694400,
-          "value": 42
+          "value": 38
         },
         {
           "date": "Jan 25\u2009\u2013\u200931, 2026",
           "timestamp": 1769299200,
-          "value": 36
+          "value": 35
         },
         {
           "date": "Feb 1\u2009\u2013\u20097, 2026",
           "timestamp": 1769904000,
-          "value": 40
+          "value": 41
         },
         {
           "date": "Feb 8\u2009\u2013\u200914, 2026",
           "timestamp": 1770508800,
-          "value": 52
+          "value": 51
         },
         {
           "date": "Feb 15\u2009\u2013\u200921, 2026",
           "timestamp": 1771113600,
-          "value": 51
+          "value": 49
         },
         {
           "date": "Feb 22\u2009\u2013\u200928, 2026",
           "timestamp": 1771718400,
-          "value": 46
+          "value": 47
         },
         {
           "date": "Mar 1\u2009\u2013\u20097, 2026",
           "timestamp": 1772323200,
-          "value": 41
+          "value": 39
         },
         {
           "date": "Mar 8\u2009\u2013\u200914, 2026",
           "timestamp": 1772928000,
-          "value": 43
+          "value": 41
         },
         {
           "date": "Mar 15\u2009\u2013\u200921, 2026",
@@ -466,7 +466,7 @@
         {
           "date": "Mar 22\u2009\u2013\u200928, 2026",
           "timestamp": 1774137600,
-          "value": 43
+          "value": 45
         },
         {
           "date": "Mar 29\u2009\u2013\u2009Apr 4, 2026",
@@ -476,7 +476,7 @@
         {
           "date": "Apr 5\u2009\u2013\u200911, 2026",
           "timestamp": 1775347200,
-          "value": 61
+          "value": 58
         },
         {
           "date": "Apr 12\u2009\u2013\u200918, 2026",
@@ -491,7 +491,7 @@
         {
           "date": "Apr 26\u2009\u2013\u2009May 2, 2026",
           "timestamp": 1777161600,
-          "value": 53
+          "value": 51
         },
         {
           "date": "May 3\u2009\u2013\u20099, 2026",
@@ -501,27 +501,27 @@
         {
           "date": "May 10\u2009\u2013\u200916, 2026",
           "timestamp": 1778371200,
-          "value": 62
+          "value": 59
         },
         {
           "date": "May 17\u2009\u2013\u200923, 2026",
           "timestamp": 1778976000,
-          "value": 64
+          "value": 61
         },
         {
           "date": "May 24\u2009\u2013\u200930, 2026",
           "timestamp": 1779580800,
-          "value": 52
+          "value": 53
         },
         {
           "date": "May 31\u2009\u2013\u2009Jun 6, 2026",
           "timestamp": 1780185600,
-          "value": 57
+          "value": 54
         },
         {
           "date": "Jun 7\u2009\u2013\u200913, 2026",
           "timestamp": 1780790400,
-          "value": 65
+          "value": 64
         },
         {
           "date": "Jun 14\u2009\u2013\u200920, 2026",
@@ -531,7 +531,7 @@
         {
           "date": "Jun 21\u2009\u2013\u200927, 2026",
           "timestamp": 1782000000,
-          "value": 63
+          "value": 61
         },
         {
           "date": "Jun 28\u2009\u2013\u2009Jul 4, 2026",
@@ -541,7 +541,7 @@
         {
           "date": "Jul 5\u2009\u2013\u200911, 2026",
           "timestamp": 1783209600,
-          "value": 61
+          "value": 64
         }
       ]
     },
@@ -567,7 +567,7 @@
         {
           "date": "Jul 27\u2009\u2013\u2009Aug 2, 2025",
           "timestamp": 1753574400,
-          "value": 21
+          "value": 20
         },
         {
           "date": "Aug 3\u2009\u2013\u20099, 2025",
@@ -602,7 +602,7 @@
         {
           "date": "Sep 14\u2009\u2013\u200920, 2025",
           "timestamp": 1757808000,
-          "value": 8
+          "value": 7
         },
         {
           "date": "Sep 21\u2009\u2013\u200927, 2025",
@@ -627,7 +627,7 @@
         {
           "date": "Oct 19\u2009\u2013\u200925, 2025",
           "timestamp": 1760832000,
-          "value": 5
+          "value": 6
         },
         {
           "date": "Oct 26\u2009\u2013\u2009Nov 1, 2025",
@@ -697,7 +697,7 @@
         {
           "date": "Jan 25\u2009\u2013\u200931, 2026",
           "timestamp": 1769299200,
-          "value": 7
+          "value": 6
         },
         {
           "date": "Feb 1\u2009\u2013\u20097, 2026",
@@ -742,7 +742,7 @@
         {
           "date": "Mar 29\u2009\u2013\u2009Apr 4, 2026",
           "timestamp": 1774742400,
-          "value": 20
+          "value": 19
         },
         {
           "date": "Apr 5\u2009\u2013\u200911, 2026",
@@ -792,7 +792,7 @@
         {
           "date": "Jun 7\u2009\u2013\u200913, 2026",
           "timestamp": 1780790400,
-          "value": 15
+          "value": 14
         },
         {
           "date": "Jun 14\u2009\u2013\u200920, 2026",
@@ -807,7 +807,7 @@
         {
           "date": "Jun 28\u2009\u2013\u2009Jul 4, 2026",
           "timestamp": 1782604800,
-          "value": 8
+          "value": 9
         },
         {
           "date": "Jul 5\u2009\u2013\u200911, 2026",
@@ -828,37 +828,37 @@
         {
           "date": "Jul 13\u2009\u2013\u200919, 2025",
           "timestamp": 1752364800,
-          "value": 29
+          "value": 31
         },
         {
           "date": "Jul 20\u2009\u2013\u200926, 2025",
           "timestamp": 1752969600,
-          "value": 32
+          "value": 30
         },
         {
           "date": "Jul 27\u2009\u2013\u2009Aug 2, 2025",
           "timestamp": 1753574400,
-          "value": 31
+          "value": 33
         },
         {
           "date": "Aug 3\u2009\u2013\u20099, 2025",
           "timestamp": 1754179200,
-          "value": 38
+          "value": 32
         },
         {
           "date": "Aug 10\u2009\u2013\u200916, 2025",
           "timestamp": 1754784000,
-          "value": 29
+          "value": 28
         },
         {
           "date": "Aug 17\u2009\u2013\u200923, 2025",
           "timestamp": 1755388800,
-          "value": 20
+          "value": 21
         },
         {
           "date": "Aug 24\u2009\u2013\u200930, 2025",
           "timestamp": 1755993600,
-          "value": 15
+          "value": 14
         },
         {
           "date": "Aug 31\u2009\u2013\u2009Sep 6, 2025",
@@ -928,7 +928,7 @@
         {
           "date": "Nov 30\u2009\u2013\u2009Dec 6, 2025",
           "timestamp": 1764460800,
-          "value": 9
+          "value": 8
         },
         {
           "date": "Dec 7\u2009\u2013\u200913, 2025",
@@ -1018,22 +1018,22 @@
         {
           "date": "Apr 5\u2009\u2013\u200911, 2026",
           "timestamp": 1775347200,
-          "value": 70
+          "value": 71
         },
         {
           "date": "Apr 12\u2009\u2013\u200918, 2026",
           "timestamp": 1775952000,
-          "value": 81
+          "value": 76
         },
         {
           "date": "Apr 19\u2009\u2013\u200925, 2026",
           "timestamp": 1776556800,
-          "value": 65
+          "value": 64
         },
         {
           "date": "Apr 26\u2009\u2013\u2009May 2, 2026",
           "timestamp": 1777161600,
-          "value": 50
+          "value": 49
         },
         {
           "date": "May 3\u2009\u2013\u20099, 2026",
@@ -1043,7 +1043,7 @@
         {
           "date": "May 10\u2009\u2013\u200916, 2026",
           "timestamp": 1778371200,
-          "value": 61
+          "value": 59
         },
         {
           "date": "May 17\u2009\u2013\u200923, 2026",
@@ -1058,17 +1058,17 @@
         {
           "date": "May 31\u2009\u2013\u2009Jun 6, 2026",
           "timestamp": 1780185600,
-          "value": 27
+          "value": 26
         },
         {
           "date": "Jun 7\u2009\u2013\u200913, 2026",
           "timestamp": 1780790400,
-          "value": 36
+          "value": 31
         },
         {
           "date": "Jun 14\u2009\u2013\u200920, 2026",
           "timestamp": 1781395200,
-          "value": 28
+          "value": 29
         },
         {
           "date": "Jun 21\u2009\u2013\u200927, 2026",
@@ -1078,12 +1078,12 @@
         {
           "date": "Jun 28\u2009\u2013\u2009Jul 4, 2026",
           "timestamp": 1782604800,
-          "value": 18
+          "value": 19
         },
         {
           "date": "Jul 5\u2009\u2013\u200911, 2026",
           "timestamp": 1783209600,
-          "value": 24
+          "value": 25
         }
       ]
     },
@@ -1129,7 +1129,7 @@
         {
           "date": "Aug 24\u2009\u2013\u200930, 2025",
           "timestamp": 1755993600,
-          "value": 1
+          "value": 0
         },
         {
           "date": "Aug 31\u2009\u2013\u2009Sep 6, 2025",
@@ -1249,7 +1249,7 @@
         {
           "date": "Feb 8\u2009\u2013\u200914, 2026",
           "timestamp": 1770508800,
-          "value": 1
+          "value": 0
         },
         {
           "date": "Feb 15\u2009\u2013\u200921, 2026",
@@ -1339,7 +1339,7 @@
         {
           "date": "Jun 14\u2009\u2013\u200920, 2026",
           "timestamp": 1781395200,
-          "value": 2
+          "value": 1
         },
         {
           "date": "Jun 21\u2009\u2013\u200927, 2026",

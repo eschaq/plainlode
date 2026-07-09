@@ -9,6 +9,7 @@ ScanResult. No FastAPI, no LLM client. Runs from the repo root:
 
 import json
 import os
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 
 from backend.scan.filter import filter_findings
@@ -21,14 +22,41 @@ from backend.scan.ranker import (
     _windows,
     rank_findings,
 )
+from backend.scan.supply_client import fetch_supply
 from backend.scan.trends_client import fetch_with_snapshot
 
 _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 RUN_LOG_PATH = os.path.join(_REPO_ROOT, "data", "run_log.jsonl")
 
+# Only the top-ranked findings get a supply lookup, to bound added latency.
+SUPPLY_TOP_N = 2
+
+
+def _attach_supply(findings) -> str:
+    """Enrich the top SUPPLY_TOP_N above-floor findings with Amazon supply data.
+
+    Parallel layer: fetch_supply never raises and returns None on any failure,
+    so a missing key / timeout / bad response leaves those findings demand-only.
+    Returns "openwebninja" if any supply data was attached, else "none". The two
+    lookups run concurrently so the added latency is bounded near one timeout,
+    not the sum.
+    """
+    top = sorted((f for f in findings if not f.low_volume),
+                 key=lambda f: f.rank)[:SUPPLY_TOP_N]
+    if not top:
+        return "none"
+    with ThreadPoolExecutor(max_workers=SUPPLY_TOP_N) as pool:
+        results = list(pool.map(lambda f: (f, fetch_supply(f.query)), top))
+    got_any = False
+    for finding, supply in results:
+        if supply:
+            finding.supply = supply
+            got_any = True
+    return "openwebninja" if got_any else "none"
+
 
 def _append_run_log(result: ScanResult, seeds: list[str], category: str,
-                    seed_source: str = "request") -> None:
+                    seed_source: str = "request", supply_source: str = "none") -> None:
     """Append one flat JSON line summarizing this scan to the run log.
 
     Fail-safe: any error here is logged and swallowed. The briefing is the
@@ -41,6 +69,7 @@ def _append_run_log(result: ScanResult, seeds: list[str], category: str,
             "category": category,
             "source": result.source,
             "seed_source": seed_source,  # how the seeds were chosen: model / fallback / request
+            "supply_source": supply_source,  # openwebninja / none
             "seed_count": len(seeds),
             "kept_count": len(kept),
             "kept": kept,
@@ -66,13 +95,16 @@ def run_scan(seeds: list[str], category: str, geo: str = "US",
     series_list, source = fetch_with_snapshot(seeds, geo, key=category)
     ranked = rank_findings(series_list)
     findings = filter_findings(ranked, category)
+    # Parallel enrichment: attach Amazon supply signal to the top findings. Never
+    # breaks the scan — a missing key / failure leaves findings demand-only.
+    supply_source = _attach_supply(findings)
     result = ScanResult(
         geo=geo,
         pulled_at=datetime.now(timezone.utc).isoformat(),
         source=source,
         findings=findings,
     )
-    _append_run_log(result, seeds, category, seed_source)
+    _append_run_log(result, seeds, category, seed_source, supply_source)
     return result
 
 

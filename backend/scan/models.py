@@ -39,6 +39,7 @@ class Finding:
     low_volume: bool = False
     rank: int = 0
     reason: str = ""  # one-line tag from the cheap-tier filter model
+    supply: dict | None = None  # Amazon supply signal (top findings only), or None
 
 
 @dataclass

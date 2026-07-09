@@ -36,6 +36,14 @@ SYSTEM = (
     "for example a seasonal peak, a competitor entering, a supply or price "
     "change, or a related term overtaking this one. Do not merely restate that "
     "the trend could flatten or fall. Be specific and grounded in the category. "
+    "Some signals include supply data from Amazon (product count, price range, "
+    "average rating). When a term shows supply data, reason over BOTH demand and "
+    "supply: a rising term with thin or expensive supply is a strong opening; a "
+    "rising term with saturated, cheap, well-rated supply is crowded and needs a "
+    "differentiated angle such as a bundle, higher quality, or a niche; a falling "
+    "term gets cleared regardless of its supply. When supply data is present, let "
+    "the Recommended call and the kill signal reflect this demand-meets-supply "
+    "read. If a term has no supply data, judge it on demand alone. "
     "Ground everything in the signal you are given. No em dashes. No hype."
 )
 
@@ -86,12 +94,36 @@ def _load_fewshot() -> list[tuple[str, str]]:
     return pairs
 
 
+def _fmt_supply(s: dict) -> str:
+    """Format a supply dict plainly for the signal block, e.g.
+    '~240 products, price $3-$18 median $9, avg rating 4.3'. Skips missing parts."""
+    parts = []
+    if isinstance(s.get("product_count"), int):
+        parts.append(f"~{s['product_count']:,} products")
+    lo, mid, hi = s.get("price_min"), s.get("price_median"), s.get("price_max")
+    if lo is not None and hi is not None:
+        med = f" median ${mid:g}" if mid is not None else ""
+        parts.append(f"price ${lo:g}-${hi:g}{med}")
+    if s.get("avg_rating") is not None:
+        parts.append(f"avg rating {s['avg_rating']:g}")
+    return ", ".join(parts)
+
+
 def _finding_lines(scan_result: ScanResult) -> list[str]:
-    """One '- query | direction | slope%' line per ranked above-floor finding."""
+    """One '- query | direction | slope%' line per ranked above-floor finding,
+    with a ' | supply: ...' tail when supply data is attached."""
     above = sorted(
         (f for f in scan_result.findings if not f.low_volume), key=lambda f: f.rank
     )
-    return [f"- {f.query} | {f.direction} | {round(f.slope * 100):+d}%" for f in above]
+    lines = []
+    for f in above:
+        line = f"- {f.query} | {f.direction} | {round(f.slope * 100):+d}%"
+        if f.supply:
+            supply = _fmt_supply(f.supply)
+            if supply:
+                line += f" | supply: {supply}"
+        lines.append(line)
+    return lines
 
 
 def _strip_signal_echo(text: str) -> str:
