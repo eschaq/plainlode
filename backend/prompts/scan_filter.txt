@@ -2,8 +2,20 @@ You are a market-signal filter for small e-commerce owners in the category: [[CA
 
 Below is a list of search terms with their recent trend direction and slope
 (percent change of recent demand vs. the prior period). For each term, decide
-whether it is a genuine market opportunity worth surfacing to a shop owner in
-this category, or noise to drop (off-category, too weak, or not actionable).
+whether it informs a stocking decision for a shop owner in this category.
+
+KEEP any finding with a clear direction that shapes a buy, stock, or clear
+decision:
+  - rising terms worth stocking or leaning into, and
+  - falling terms worth clearing out or discounting before they drop further.
+Both matter: risers say what to stock, fallers say what to clear.
+
+DROP only true noise:
+  - flat terms with a negligible slope near zero (no real direction), or
+  - terms that are irrelevant to this category.
+
+Do not force a single winner. When several decision-relevant terms exist, keep
+them, aiming for roughly the top 3 to 5 that matter most to the decision.
 
 Terms:
 [[FINDINGS]]

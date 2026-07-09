@@ -19,26 +19,45 @@ from backend.scan.ranker import (
     _windows,
     rank_findings,
 )
-from backend.scan.trends_client import fetch_timeseries
-
-SOURCE = "scrapingdog_google_trends"
+from backend.scan.trends_client import fetch_with_snapshot
 
 
 def run_scan(seeds: list[str], category: str, geo: str = "US") -> ScanResult:
     """Run one scan end to end and return a ScanResult.
 
-    Pull the seed terms' interest-over-time, rank them, pass the ranked findings
-    through the filter seam, and stamp the result with provenance.
+    Pull the seed terms' interest-over-time (live, with a snapshot fallback),
+    rank them, pass the ranked findings through the filter seam, and stamp the
+    result with provenance. `source` records whether the data came from a live
+    pull or a snapshot.
     """
-    series_list = fetch_timeseries(seeds, geo)
+    series_list, source = fetch_with_snapshot(seeds, geo, key=category)
     ranked = rank_findings(series_list)
     findings = filter_findings(ranked, category)
     return ScanResult(
         geo=geo,
         pulled_at=datetime.now(timezone.utc).isoformat(),
-        source=SOURCE,
+        source=source,
         findings=findings,
     )
+
+
+def run_briefing(
+    seeds: list[str], category: str, geo: str = "US"
+) -> tuple[ScanResult, str, str]:
+    """Run the scan, write the briefing, then write the plain-English explainer.
+
+    Returns (scan_result, briefing_text, explainer_text). The two texts are kept
+    separate so the frontend can render them in distinct UI blocks. The category
+    is stamped onto the ScanResult so the briefing layer can render it.
+    """
+    # Imported here to avoid a circular import (briefing imports scan for this).
+    from backend.scan.briefing import write_briefing, write_explainer
+
+    scan_result = run_scan(seeds, category, geo)
+    scan_result.category = category
+    briefing = write_briefing(scan_result)
+    explainer = write_explainer(scan_result, briefing)
+    return scan_result, briefing, explainer
 
 
 if __name__ == "__main__":

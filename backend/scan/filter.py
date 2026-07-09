@@ -86,11 +86,25 @@ def filter_findings(findings: list[Finding], category: str) -> list[Finding]:
     # terms. max_tokens is only a ceiling (billed per token generated), so scale
     # it with the term count and keep a comfortable floor.
     max_tokens = max(1024, 320 * len(above))
-    text = complete(prompt, max_tokens=max_tokens)
-    parsed = _extract_json(text)
-    results = parsed.get("results") if isinstance(parsed, dict) else None
-    if not isinstance(results, list) or not results:
-        print("[filter] no usable model output, keeping all findings")
+    # Filtering is a judgment task, not a creative one. Temperature 0.0 keeps it
+    # deterministic so the same seeds keep the same findings every run and the
+    # scripted demo is reproducible.
+    #
+    # Retry up to 3 total attempts on an empty or unparseable response before
+    # giving up. A transient model hiccup should not silently flip the scan to
+    # keep-all, which would break demo reproducibility.
+    results = None
+    for attempt in range(1, 4):
+        text = complete(prompt, max_tokens=max_tokens, temperature=0.0)
+        parsed = _extract_json(text)
+        candidate = parsed.get("results") if isinstance(parsed, dict) else None
+        if isinstance(candidate, list) and candidate:
+            results = candidate
+            print(f"[filter] model output parsed on attempt {attempt}/3")
+            break
+        print(f"[filter] attempt {attempt}/3 returned no usable JSON")
+    if results is None:
+        print("[filter] all 3 attempts failed, keeping all findings")
         return above + below
 
     # Map the model's verdicts back to findings by query string.

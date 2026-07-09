@@ -49,7 +49,7 @@ def _extract_text(body: dict) -> str:
     return dumped if dumped.strip() else ""
 
 
-def complete(prompt: str, max_tokens: int = 512) -> str:
+def complete(prompt: str, max_tokens: int = 512, temperature: float = TEMPERATURE) -> str:
     """Send `prompt` to the cheap-tier Fireworks model and return its text.
 
     Raises on a missing key or model (setup problems). Returns "" if the request
@@ -76,7 +76,7 @@ def complete(prompt: str, max_tokens: int = 512) -> str:
     payload = {
         "model": model,
         "max_tokens": max_tokens,
-        "temperature": TEMPERATURE,
+        "temperature": temperature,
         "messages": [{"role": "user", "content": prompt}],
     }
     try:

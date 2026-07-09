@@ -6,3 +6,10 @@ node_modules/
 dist/
 .DS_Store
 data/cache/
+
+# Snapshots are real prior pulls (cache-like). Ignore large ones, but keep the
+# back-to-school demo snapshot committed so a fresh clone can run the demo.
+data/snapshots/*.json
+!data/snapshots/back-to-school.json
+
+

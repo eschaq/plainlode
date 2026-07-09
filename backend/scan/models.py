@@ -48,3 +48,4 @@ class ScanResult:
     pulled_at: str  # ISO 8601
     source: str
     findings: list[Finding] = field(default_factory=list)
+    category: str = ""  # the scan's vertical, used by the briefing layer
