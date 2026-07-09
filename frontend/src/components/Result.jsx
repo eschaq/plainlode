@@ -270,17 +270,31 @@ export default function Result({ data, explainer, explainerState, onReset }) {
           >
             In plain English
           </div>
-          {explainerState === "done" && explainer ? (
-            <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.7, color: C.b7 }}>{explainer}</p>
-          ) : (
-            // Subtle skeleton shimmer while /api/explain is in flight — on this
-            // card only, so the rest of the briefing stays put.
-            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 3 }} aria-hidden="true">
-              <div className="shimmer-line" style={{ width: "100%" }} />
-              <div className="shimmer-line" style={{ width: "94%" }} />
-              <div className="shimmer-line" style={{ width: "72%" }} />
-            </div>
-          )}
+          {/* Reserve height so the card doesn't jump when the shimmer is
+              replaced by the (taller) explainer text. */}
+          <div style={{ minHeight: 84 }}>
+            {explainerState === "done" && explainer ? (
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: 14.5,
+                  lineHeight: 1.7,
+                  color: C.b7,
+                  animation: "statusFade .5s ease both", // calm fade-in when it lands
+                }}
+              >
+                {explainer}
+              </p>
+            ) : (
+              // Subtle skeleton shimmer while /api/explain is in flight — on this
+              // card only, so the rest of the briefing stays put.
+              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 3 }} aria-hidden="true">
+                <div className="shimmer-line" style={{ width: "100%" }} />
+                <div className="shimmer-line" style={{ width: "94%" }} />
+                <div className="shimmer-line" style={{ width: "72%" }} />
+              </div>
+            )}
+          </div>
         </div>
       )}
 
