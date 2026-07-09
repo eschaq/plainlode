@@ -27,7 +27,8 @@ _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 RUN_LOG_PATH = os.path.join(_REPO_ROOT, "data", "run_log.jsonl")
 
 
-def _append_run_log(result: ScanResult, seeds: list[str], category: str) -> None:
+def _append_run_log(result: ScanResult, seeds: list[str], category: str,
+                    seed_source: str = "request") -> None:
     """Append one flat JSON line summarizing this scan to the run log.
 
     Fail-safe: any error here is logged and swallowed. The briefing is the
@@ -39,6 +40,7 @@ def _append_run_log(result: ScanResult, seeds: list[str], category: str) -> None
             "ts": result.pulled_at,
             "category": category,
             "source": result.source,
+            "seed_source": seed_source,  # how the seeds were chosen: model / fallback / request
             "seed_count": len(seeds),
             "kept_count": len(kept),
             "kept": kept,
@@ -50,13 +52,16 @@ def _append_run_log(result: ScanResult, seeds: list[str], category: str) -> None
         print(f"[run_log] failed to write log entry: {exc}")
 
 
-def run_scan(seeds: list[str], category: str, geo: str = "US") -> ScanResult:
+def run_scan(seeds: list[str], category: str, geo: str = "US",
+             seed_source: str = "request") -> ScanResult:
     """Run one scan end to end and return a ScanResult.
 
     Pull the seed terms' interest-over-time (live, with a snapshot fallback),
     rank them, pass the ranked findings through the filter seam, and stamp the
     result with provenance. `source` records whether the data came from a live
-    pull or a snapshot. One line is appended to the run log per scan.
+    pull or a snapshot; `seed_source` records how the seeds were chosen (model /
+    fallback / request) and is written to the run log. One line is appended to
+    the run log per scan.
     """
     series_list, source = fetch_with_snapshot(seeds, geo, key=category)
     ranked = rank_findings(series_list)
@@ -67,7 +72,7 @@ def run_scan(seeds: list[str], category: str, geo: str = "US") -> ScanResult:
         source=source,
         findings=findings,
     )
-    _append_run_log(result, seeds, category)
+    _append_run_log(result, seeds, category, seed_source)
     return result
 
 

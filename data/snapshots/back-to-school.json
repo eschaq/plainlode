@@ -1,7 +1,7 @@
 {
   "key": "back-to-school",
   "geo": "US",
-  "pulled_at": "2026-07-09T19:41:28.305366+00:00",
+  "pulled_at": "2026-07-09T22:36:17.245579+00:00",
   "series": [
     {
       "query": "school supplies",
@@ -265,12 +265,12 @@
         {
           "date": "Jun 28\u2009\u2013\u2009Jul 4, 2026",
           "timestamp": 1782604800,
-          "value": 27
+          "value": 26
         },
         {
           "date": "Jul 5\u2009\u2013\u200911, 2026",
           "timestamp": 1783209600,
-          "value": 48
+          "value": 49
         }
       ]
     },
@@ -531,7 +531,7 @@
         {
           "date": "Jun 21\u2009\u2013\u200927, 2026",
           "timestamp": 1782000000,
-          "value": 64
+          "value": 63
         },
         {
           "date": "Jun 28\u2009\u2013\u2009Jul 4, 2026",

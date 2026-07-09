@@ -21,6 +21,7 @@ from pydantic import BaseModel
 from backend.scan.briefing import write_briefing, write_explainer
 from backend.scan.models import Finding, ScanResult, TermSeries
 from backend.scan.scan import run_scan
+from backend.scan.seed_gen import generate_seeds
 from backend.scan.trends_client import NO_DATA_SOURCE
 
 app = FastAPI(title="Plainlode API", version="0.1.0")
@@ -39,24 +40,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# v1 default seeds when the caller omits them. The smart category-to-seeds model
-# step is v2/roadmap; this is a simple placeholder, not fabricated data (these
-# are real terms the live source is then queried for).
-DEFAULT_SEEDS = {
-    "back to school": ["school supplies", "lunch box", "pencil case",
-                       "kids backpack", "dorm bedding"],
-}
-
-
-def seeds_for_category(category: str) -> list[str]:
-    """Derive a small default seed set from a category (v1 placeholder)."""
-    known = DEFAULT_SEEDS.get(category.strip().lower())
-    if known:
-        return list(known)
-    base = category.strip()
-    return [base, f"{base} kit", f"best {base}"]
-
 
 def _finding_dict(f: Finding) -> dict:
     # slope is a fraction (0.318 == +31.8%); the frontend formats it.
@@ -100,9 +83,17 @@ def scan(req: ScanRequest):
     # scan + briefing ONLY; the explainer runs exclusively in /api/explain.
     t_start = time.perf_counter()
 
-    seeds = req.seeds if req.seeds else seeds_for_category(category)
+    # Seeds: use the caller's if given, otherwise generate from the category with
+    # the cheap-tier model (static helper as fallback — never breaks the scan).
+    t_seed0 = time.perf_counter()
+    if req.seeds:
+        seeds, seed_source = req.seeds, "request"
+    else:
+        seeds, seed_source = generate_seeds(category)
+    t_seed = time.perf_counter() - t_seed0
+
     t0 = time.perf_counter()
-    result: ScanResult = run_scan(seeds, category)  # called exactly once
+    result: ScanResult = run_scan(seeds, category, seed_source=seed_source)  # called exactly once
     t_scan = time.perf_counter() - t0
     result.category = category  # the briefing renderer needs the category
 
@@ -126,8 +117,9 @@ def scan(req: ScanRequest):
             raise HTTPException(status_code=502, detail=str(exc))
 
     total = time.perf_counter() - t_start
-    print(f"[/api/scan] category={category!r} run_scan={t_scan:.1f}s "
-          f"write_briefing={t_brief:.1f}s total={total:.1f}s (no explainer on this path)")
+    print(f"[/api/scan] category={category!r} seeds={seed_source}({t_seed:.1f}s) "
+          f"run_scan={t_scan:.1f}s write_briefing={t_brief:.1f}s total={total:.1f}s "
+          "(no explainer on this path)")
 
     return {
         "category": category,

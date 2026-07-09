@@ -50,7 +50,7 @@ def _extract_text(body: dict) -> str:
 
 
 def complete(prompt: str, max_tokens: int = 512, temperature: float = TEMPERATURE,
-             reasoning_effort: str = None) -> str:
+             reasoning_effort: str = None, timeout: float = TIMEOUT_SECONDS) -> str:
     """Send `prompt` to the cheap-tier Fireworks model and return its text.
 
     Raises on a missing key or model (setup problems). Returns "" if the request
@@ -86,7 +86,7 @@ def complete(prompt: str, max_tokens: int = 512, temperature: float = TEMPERATUR
         payload["reasoning_effort"] = reasoning_effort
     try:
         resp = requests.post(ENDPOINT, headers=headers, json=payload,
-                             timeout=TIMEOUT_SECONDS)
+                             timeout=timeout)
     except requests.RequestException as exc:
         print(f"[fireworks_client] request error: {exc}")
         return ""
