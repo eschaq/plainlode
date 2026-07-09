@@ -138,8 +138,9 @@ def write_briefing(scan_result: ScanResult) -> str:
     # Cap at 700 with low reasoning effort: enough for the three sections, and it
     # bounds generation time so the scan stays comfortably under the gate. Low
     # effort is what makes 700 sufficient — otherwise gpt-oss spends the budget
-    # reasoning and truncates the briefing.
-    text = complete(prompt, max_tokens=700, temperature=0.3, reasoning_effort="low")
+    # reasoning and truncates the briefing. The 12s timeout means a Fireworks slow
+    # spell fails fast (raises -> 502) rather than hanging up to the old 45s.
+    text = complete(prompt, max_tokens=700, temperature=0.3, reasoning_effort="low", timeout=12)
     if not text or not text.strip():
         raise RuntimeError(
             "Briefing model returned empty output. Check FIREWORKS_MODEL "

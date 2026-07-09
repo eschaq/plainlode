@@ -90,21 +90,22 @@ def filter_findings(findings: list[Finding], category: str) -> list[Finding]:
     # deterministic so the same seeds keep the same findings every run and the
     # scripted demo is reproducible.
     #
-    # Retry up to 3 total attempts on an empty or unparseable response before
-    # giving up. A transient model hiccup should not silently flip the scan to
-    # keep-all, which would break demo reproducibility.
+    # Retry once (2 total attempts) on an empty or unparseable response before
+    # giving up. Each call is capped at 12s so a Fireworks slow spell fails fast
+    # to keep-all rather than hanging: worst case 2 x 12s = 24s, not 3 x 45s.
     results = None
-    for attempt in range(1, 4):
-        text = complete(prompt, max_tokens=max_tokens, temperature=0.0, reasoning_effort="low")
+    for attempt in range(1, 3):
+        text = complete(prompt, max_tokens=max_tokens, temperature=0.0,
+                        reasoning_effort="low", timeout=12)
         parsed = _extract_json(text)
         candidate = parsed.get("results") if isinstance(parsed, dict) else None
         if isinstance(candidate, list) and candidate:
             results = candidate
-            print(f"[filter] model output parsed on attempt {attempt}/3")
+            print(f"[filter] model output parsed on attempt {attempt}/2")
             break
-        print(f"[filter] attempt {attempt}/3 returned no usable JSON")
+        print(f"[filter] attempt {attempt}/2 returned no usable JSON")
     if results is None:
-        print("[filter] all 3 attempts failed, keeping all findings")
+        print("[filter] all 2 attempts failed, keeping all findings")
         return above + below
 
     # Map the model's verdicts back to findings by query string.
