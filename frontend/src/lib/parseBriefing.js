@@ -17,6 +17,12 @@ const LABELS = ["Findings", "Options", "Recommended"];
 export function parseBriefing(text) {
   if (!text || !text.trim()) return EMPTY;
 
+  // Strip stray markdown FIRST. This is both a safety net (asterisks never
+  // render) and load-bearing: if the model emits "**Findings:**", the "**" sits
+  // between the newline and the label and defeats the section regex, jamming the
+  // whole briefing into one block. Cleaning it makes the labels parse.
+  text = cleanMarkdown(text);
+
   const marks = [];
   for (const label of LABELS) {
     const re = new RegExp(`(?:^|\\n)\\s*${label}\\b\\s*:?\\s*`, "i");
@@ -96,4 +102,13 @@ function firstSentence(s) {
 
 function capitalize(s) {
   return s ? s[0].toUpperCase() + s.slice(1) : s;
+}
+
+// Remove stray markdown so asterisks never render and the section labels parse
+// even when the model wraps them (e.g. "**Findings:**" or "### Findings").
+function cleanMarkdown(s) {
+  return s
+    .replace(/\*/g, "") // all asterisks: ** bold, * emphasis/bullets
+    .replace(/__/g, "") // markdown bold underscores
+    .replace(/(^|\n)[ \t]{0,3}#{1,6}[ \t]*/g, "$1"); // markdown headings -> plain
 }
