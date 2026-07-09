@@ -2,68 +2,125 @@
 
 **The signal, mined plain.**
 
-Plainlode is a market-intelligence engine that scans live market signal and returns a decision-first briefing in plain language for small e-commerce owners. It reads the noisy outside world and hands a solo store owner one clear call on what to sell or stock next, then argues against its own recommendation by naming the single live signal that would kill it.
+A live market-intelligence engine that returns a plain-language decision — not a
+dashboard — for small WooCommerce owners.
 
-Built for the **AMD Developer Hackathon: ACT II** (Track 3, Unicorn), July 6-11 2026. Runs on **Fireworks AI, on AMD Instinct** hardware.
+**Live app:** https://plainlode-production.up.railway.app
+**Backend API:** https://web-production-a8e17.up.railway.app
 
-> Status: active build. Setup and usage sections grow as the pieces land.
+---
 
-## The idea
+## Built for
 
-A solo WooCommerce owner has more live market signal than they can read and no analyst to read it, so they end up guessing. Everyone else in this space reports internal profit, on Shopify, in a dashboard. Plainlode does the opposite: external market opportunity, WooCommerce-first, delivered as a decision rather than a chart.
+**AMD Developer Hackathon: ACT II — Track 3 (Unicorn).**
+Plainlode runs its inference on **Fireworks AI, served on AMD Instinct GPUs.**
+Every scan makes two model calls on Fireworks/AMD: a cheap-tier scan filter and
+the plain-language briefing engine.
 
-The novel behavior is the self-arguing recommendation. The briefing does not just make a call. It states the one piece of live evidence that would reverse that call, so the reader knows exactly what to watch.
+## What it does
+
+Type a store category (e.g. `back to school`). Plainlode pulls live demand
+signal, reasons over it on AMD-hosted models, and hands back one decision: what
+to stock, and the single live signal that would reverse that call.
+
+## How it works
+
+```
+typed category
+  → live demand pull        Scrapingdog Google Trends (interest-over-time)
+  → cheap-tier scan filter  Fireworks AI / AMD Instinct — keep decision-relevant terms
+  → slope-ranked findings   rising/falling by trend slope, with a volume floor
+  → briefing engine         Fireworks AI / AMD Instinct — Findings / Options / Recommended
+  → a decision              the call + the one live signal that would kill it
+```
+
+- **Facts are retrieved live, not recalled from training.** The demand numbers
+  come from a real-time Google Trends pull on each scan.
+- **Snapshot fallback.** If a live pull fails (rate limit, upstream hiccup),
+  Plainlode serves the most recent *real* pull from disk and labels it a
+  snapshot. It never fabricates data — with no live data and no snapshot, it
+  says so plainly.
+- **Volume floor.** Near-dead terms are held out of the ranking so noise can't
+  masquerade as an opportunity.
+
+## The novel behavior
+
+Plainlode's recommendation **argues against itself.** Every briefing ends by
+naming the one concrete, live signal that would reverse the call — the "kill
+signal" — so the owner knows exactly what to watch for, and when to stop.
+
+---
 
 ## Architecture
 
-```
-Live demand signal            Scrapingdog Google Trends API
-        |
-        v
-Cheap-tier scan filter        Fireworks serverless, on AMD Instinct
-        |
-        v
-Fine-tuned report voice       LoRA adapter, Fireworks dedicated deployment, on AMD Instinct
-        |
-        v
-Briefing                      Findings, then Options, then a Recommended
-                              action that names the signal that would kill it
-```
+- **Backend** — FastAPI (`backend/`). The scan engine lives in `backend/scan/`:
+  live pull (`trends_client.py`), slope ranker (`ranker.py`), model filter
+  (`filter.py`), briefing + explainer (`briefing.py`), orchestrator (`scan.py`),
+  and the Fireworks HTTP client (`fireworks_client.py`).
+- **Frontend** — React + Vite (`frontend/`). Three states: input → scanning →
+  result.
+- **Deployment** — two services on Railway (backend + static frontend). See
+  [DEPLOY.md](DEPLOY.md).
 
-Two design choices worth calling out. Facts come from live retrieval, not from training, so the briefing stays current at near-zero marginal cost. The fine-tune teaches voice and format only. And rising demand is derived from the trend slope, since the live source exposes interest-over-time rather than a ready-made rising feed.
+The backend talks to Scrapingdog and Fireworks over plain HTTP, so the deployed
+image carries no heavy SDKs.
 
-## Stack
+## Run locally
 
-- Backend: FastAPI (Python)
-- Runtime model: Fireworks AI on AMD Instinct (cheap-tier scan model plus a fine-tuned report-voice LoRA)
-- Live data: Scrapingdog Google Trends API
-- Fine-tune corpus: Kaggle e-commerce reviews (CC0), teaches voice only
-- Frontend: React + Tailwind
-- Hosting: Railway
-- License: MIT
+Requires Python 3.11+ and Node 18+.
 
-## Setup
-
-Requires Python 3.11+ and a Scrapingdog API key.
+**1. Backend**
 
 ```bash
 git clone https://github.com/eschaq/plainlode.git
 cd plainlode
-python3 -m venv .venv
-source .venv/bin/activate
-pip install requests
-cp .env.example .env      # then fill in SCRAPINGDOG_API_KEY
+
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+
+cp .env.example .env           # then fill in your keys (see below)
+set -a; source .env; set +a    # .env is sourced (no python-dotenv)
+
+uvicorn backend.app:app        # http://127.0.0.1:8000
 ```
 
-Load the environment and run the day-one source check:
+**2. Frontend** (second terminal)
 
 ```bash
-set -a; source .env; set +a
-python spike.py
+cd frontend
+npm install
+
+# point the app at your local backend (default if unset: http://127.0.0.1:8000)
+echo "VITE_API_BASE_URL=http://127.0.0.1:8000" > .env   # see frontend/.env.example
+
+npm run dev                    # http://localhost:5173
 ```
 
-Full application setup (backend API, frontend, hosted URL) lands here as those pieces are built.
+Open http://localhost:5173, type a category, and mine the signal.
+
+### Environment variables
+
+| Variable | Where | Purpose |
+|----------|-------|---------|
+| `SCRAPINGDOG_API_KEY` | backend | Scrapingdog Google Trends key |
+| `FIREWORKS_API_KEY` | backend | Fireworks AI key |
+| `FIREWORKS_MODEL` | backend | e.g. `accounts/fireworks/models/gpt-oss-20b` |
+| `CORS_ORIGINS` | backend (prod) | comma-separated allowed origins; localhost always allowed |
+| `VITE_API_BASE_URL` | frontend (build-time) | backend base URL the frontend calls |
+
+Templates: [`.env.example`](.env.example) (backend) and
+[`frontend/.env.example`](frontend/.env.example).
+
+---
+
+## Fine-tuned voice
+
+A custom report-voice model was fine-tuned on **Fireworks / AMD** to teach the
+plain-language briefing format (proven end to end; the training-set builder is
+in `finetune/`). The live app currently serves a **prompt-engineered voice on
+Fireworks serverless** for always-on reliability with no cold start. Serving the
+dedicated fine-tuned model is on the roadmap.
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE).
