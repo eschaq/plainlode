@@ -1,0 +1,8 @@
+# Plainlode backend runtime (the FastAPI service deployed to Railway).
+# The backend talks to Scrapingdog and Fireworks over plain HTTP via `requests`,
+# so the fireworks-ai SDK is NOT a runtime dependency (it's only used by the
+# fine-tune/deploy scripts — see requirements-dev.txt).
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+requests==2.33.0
+pydantic==2.8.2

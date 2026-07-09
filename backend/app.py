@@ -11,6 +11,7 @@ Env is read by the scan modules themselves (SCRAPINGDOG_API_KEY, FIREWORKS_*),
 so source .env before running: set -a; source .env; set +a
 """
 
+import os
 import time
 
 from fastapi import FastAPI, HTTPException
@@ -24,9 +25,16 @@ from backend.scan.trends_client import NO_DATA_SOURCE
 
 app = FastAPI(title="Plainlode API", version="0.1.0")
 
-# CORS for local dev so the React dev server (any localhost port) can call us.
+# CORS. Exact production origins come from the CORS_ORIGINS env var (comma-
+# separated, e.g. "https://plainlode-web.up.railway.app"); local dev origins
+# (any localhost / 127.0.0.1 port) are always allowed via the regex. Set
+# CORS_ORIGINS in Railway to the deployed frontend URL.
+_cors_env = os.environ.get("CORS_ORIGINS", "")
+_allowed_origins = [o.strip() for o in _cors_env.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
+    allow_origins=_allowed_origins,
     allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?",
     allow_methods=["*"],
     allow_headers=["*"],
