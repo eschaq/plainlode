@@ -7,6 +7,8 @@ ScanResult. No FastAPI, no LLM client. Runs from the repo root:
     python -m backend.scan.scan
 """
 
+import json
+import os
 from datetime import datetime, timezone
 
 from backend.scan.filter import filter_findings
@@ -21,6 +23,32 @@ from backend.scan.ranker import (
 )
 from backend.scan.trends_client import fetch_with_snapshot
 
+_REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+RUN_LOG_PATH = os.path.join(_REPO_ROOT, "data", "run_log.jsonl")
+
+
+def _append_run_log(result: ScanResult, seeds: list[str], category: str) -> None:
+    """Append one flat JSON line summarizing this scan to the run log.
+
+    Fail-safe: any error here is logged and swallowed. The briefing is the
+    product; the run log is secondary and must never break a scan.
+    """
+    try:
+        kept = [f.query for f in result.findings if not f.low_volume]
+        entry = {
+            "ts": result.pulled_at,
+            "category": category,
+            "source": result.source,
+            "seed_count": len(seeds),
+            "kept_count": len(kept),
+            "kept": kept,
+        }
+        os.makedirs(os.path.dirname(RUN_LOG_PATH), exist_ok=True)
+        with open(RUN_LOG_PATH, "a", encoding="utf-8") as fh:
+            fh.write(json.dumps(entry) + "\n")
+    except Exception as exc:  # never let logging break a scan
+        print(f"[run_log] failed to write log entry: {exc}")
+
 
 def run_scan(seeds: list[str], category: str, geo: str = "US") -> ScanResult:
     """Run one scan end to end and return a ScanResult.
@@ -28,17 +56,19 @@ def run_scan(seeds: list[str], category: str, geo: str = "US") -> ScanResult:
     Pull the seed terms' interest-over-time (live, with a snapshot fallback),
     rank them, pass the ranked findings through the filter seam, and stamp the
     result with provenance. `source` records whether the data came from a live
-    pull or a snapshot.
+    pull or a snapshot. One line is appended to the run log per scan.
     """
     series_list, source = fetch_with_snapshot(seeds, geo, key=category)
     ranked = rank_findings(series_list)
     findings = filter_findings(ranked, category)
-    return ScanResult(
+    result = ScanResult(
         geo=geo,
         pulled_at=datetime.now(timezone.utc).isoformat(),
         source=source,
         findings=findings,
     )
+    _append_run_log(result, seeds, category)
+    return result
 
 
 def run_briefing(

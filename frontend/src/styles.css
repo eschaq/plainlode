@@ -1,0 +1,198 @@
+/* Keyframes ported verbatim from Plainlode.dc.html */
+@keyframes veinTravel {
+  0% { transform: translateY(-140%); }
+  100% { transform: translateY(140%); }
+}
+@keyframes veinBreathe {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
+}
+@keyframes statusFade {
+  0% { opacity: 0; transform: translateY(4px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes livePulse {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.35); }
+}
+@keyframes riseIn {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes tick {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.5; }
+}
+
+html, body { margin: 0; background: #0c0f13; }
+#root { min-height: 100vh; }
+* { box-sizing: border-box; }
+body {
+  font-family: "Space Grotesk", system-ui, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: #e8b54d; text-decoration: none; }
+a:hover { color: #f0c877; }
+input::placeholder { color: #5a626d; }
+
+/* The category input: gold, centered, underlined. Width is set inline so it
+   grows with the typed category (the design fixed it at 4.2em for "coffee"). */
+.cat-input {
+  font-family: "Fraunces", serif;
+  font-weight: 500;
+  /* Scales down on narrow phones so the headline + input never overflow. Must
+     match the idle <h1> size so the input stays inline with the words. */
+  font-size: clamp(28px, 8vw, 38px);
+  color: #e8b54d;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid #3a4048;
+  outline: none;
+  max-width: 100%;
+  padding: 0 2px 2px;
+  text-align: center;
+  letter-spacing: -0.015em;
+  transition: border-color 0.18s ease;
+}
+.cat-input:focus { border-bottom-color: #e8b54d; }
+
+.btn-primary {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #0c0f13;
+  background: #e8b54d;
+  border: none;
+  border-radius: 8px;
+  padding: 15px 26px;
+  cursor: pointer;
+  touch-action: manipulation; /* drop the 300ms tap delay on mobile */
+  letter-spacing: 0.01em;
+  transition: transform 0.12s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+.btn-primary:hover {
+  background: #f0c877;
+  box-shadow: 0 8px 30px rgba(232, 181, 77, 0.22);
+  transform: translateY(-1px);
+}
+
+.btn-ghost {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #e8b54d;
+  background: transparent;
+  border: 1px solid #3a4048;
+  border-radius: 8px;
+  padding: 12px 20px;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.btn-ghost:hover {
+  border-color: #e8b54d;
+  background: rgba(232, 181, 77, 0.06);
+}
+
+/* Visible keyboard focus on custom controls (mouse users are unaffected). */
+.btn-primary:focus-visible,
+.btn-ghost:focus-visible,
+.cat-input:focus-visible {
+  outline: 2px solid #e8b54d;
+  outline-offset: 3px;
+}
+
+/* Findings strip: thin scrollbar so horizontal overflow reads intentionally. */
+.strip::-webkit-scrollbar { height: 6px; }
+.strip::-webkit-scrollbar-thumb { background: #262b32; border-radius: 3px; }
+
+/* Bento findings grid: a wide featured card (top mover) on top, the rest in a
+   responsive row below. Robust for any finding count — no dead cells. */
+.bento {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+.cell {
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: #12161c;
+  border-radius: 16px;
+  padding: 18px;
+  overflow: hidden;
+  transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1), border-color 0.3s ease,
+    background 0.3s ease;
+}
+.cell:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.13);
+  background: #161b22;
+}
+.cell .num {
+  font-family: "Fraunces", serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  font-size: 30px;
+}
+.cell .num .arrow { font-size: 0.64em; }
+.cell .term { color: #9aa1ab; font-size: 13px; margin-top: 8px; line-height: 1.35; }
+.cell.up .num { color: #e8b54d; }
+.cell.down .num { color: #9aa1ab; }
+.cell.down .slope { text-decoration: line-through; text-decoration-thickness: 1px; }
+.cell.feature {
+  grid-column: 1 / -1;
+  padding: 26px 28px;
+  background: radial-gradient(120% 130% at 100% 0%, rgba(232, 181, 77, 0.09), transparent 55%),
+    #12161c;
+}
+.cell.feature .num { font-size: clamp(40px, 7vw, 60px); }
+.cell.feature .term { font-size: 15.5px; color: #f3f5f8; margin-top: 12px; }
+.cell.feature .tag {
+  display: inline-block;
+  margin-top: 14px;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #e8b54d;
+  border: 1px solid rgba(232, 181, 77, 0.35);
+  border-radius: 999px;
+  padding: 5px 11px;
+}
+
+/* Skeleton shimmer for the explainer card while /api/explain is in flight.
+   A warm highlight sweeps across a dark bar, echoing the design's sc-shine. */
+@keyframes shimmer {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.shimmer-line {
+  height: 11px;
+  border-radius: 4px;
+  background-color: #1c2128;
+  /* Gold sweep — the only accent on dark ground, per the strict palette. */
+  background-image: linear-gradient(
+    90deg,
+    rgba(232, 181, 77, 0) 25%,
+    rgba(232, 181, 77, 0.14) 37%,
+    rgba(232, 181, 77, 0) 63%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.5s ease infinite;
+}
+
+/* Respect users who ask for reduced motion: the scanning vein, breathing,
+   pulses, shimmer, and rise-in all fall still. The flow still works — content
+   just appears without animation. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

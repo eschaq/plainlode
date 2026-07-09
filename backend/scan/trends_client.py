@@ -23,7 +23,9 @@ from backend.scan.models import TermSeries, TrendPoint
 
 ENDPOINT = "https://api.scrapingdog.com/google_trends"
 MAX_QUERIES_PER_CALL = 5
-TIMEOUT_SECONDS = 45
+# Read timeout for a single live pull. Kept short so a slow Trends response
+# fails fast and falls to a retry or the snapshot, rather than hanging the scan.
+TIMEOUT_SECONDS = 12
 # Scrapingdog's Trends upstream is occasionally flaky (transient non-200s like a
 # 400 "please try again", or a 403 from a concurrency/upstream hiccup on a funded
 # account). Retry the live pull a few times before giving up and serving the

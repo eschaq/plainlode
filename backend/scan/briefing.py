@@ -48,11 +48,11 @@ EXPLAINER_SYSTEM = (
     "four short sentences. No em dashes, no en dashes, no jargon."
 )
 
-# Markers that identify the two gold few-shot anchors in the training file, so
-# they stay in sync with the fine-tune dataset instead of being copied here.
+# Marker that identifies the gold few-shot anchor in the training file, so it
+# stays in sync with the fine-tune dataset instead of being copied here. One
+# anchor (not two) keeps the prompt short and the briefing fast.
 _FEWSHOT_MARKERS = (
     "school supplies | rising | +26%",   # back-to-school anchor
-    "espresso machine | rising | +22%",  # home-coffee anchor
 )
 
 
@@ -95,13 +95,15 @@ def _finding_lines(scan_result: ScanResult) -> list[str]:
 
 
 def _strip_signal_echo(text: str) -> str:
-    """Drop any echoed signal block by slicing from the first 'Findings:'.
+    """Drop any echoed signal block by slicing from the first 'Findings'.
 
     Some runs prepend the Category/Signal block before the briefing. Anchor on
-    'Findings:' and keep only from there. If it is absent, leave the text
-    unchanged rather than risk eating real content.
+    the 'Findings' section header (colon optional, since the model sometimes
+    drops it) and keep only from there. If it is absent, leave the text unchanged
+    rather than risk eating real content. The signal block never contains the
+    word 'Findings', so this reliably targets the section header.
     """
-    idx = text.find("Findings:")
+    idx = text.find("Findings")
     return text[idx:] if idx != -1 else text
 
 
@@ -117,7 +119,7 @@ def _build_prompt(signal_block: str, fewshot: list[tuple[str, str]]) -> str:
     fireworks_client.complete sends a single user turn, so the three parts are
     folded into one prompt string.
     """
-    parts = [SYSTEM, "", "Here are two examples of the exact format and voice."]
+    parts = [SYSTEM, "", "Here is an example of the exact format and voice."]
     for i, (user, assistant) in enumerate(fewshot, start=1):
         parts += [f"\nExample {i}", user, "", assistant]
     parts += ["\nNow write the briefing for this signal.", signal_block]
@@ -133,12 +135,11 @@ def write_briefing(scan_result: ScanResult) -> str:
     signal_block = _render_signal_block(scan_result)
     prompt = _build_prompt(signal_block, _load_fewshot())
 
-    # gpt-oss reasons before it emits the briefing, so give the output headroom.
-    # Scaled with the finding count like the filter, with a comfortable floor.
-    n = sum(1 for f in scan_result.findings if not f.low_volume)
-    max_tokens = max(1024, 512 * n)
-
-    text = complete(prompt, max_tokens=max_tokens, temperature=0.3)
+    # Cap at 700 with low reasoning effort: enough for the three sections, and it
+    # bounds generation time so the scan stays comfortably under the gate. Low
+    # effort is what makes 700 sufficient — otherwise gpt-oss spends the budget
+    # reasoning and truncates the briefing.
+    text = complete(prompt, max_tokens=700, temperature=0.3, reasoning_effort="low")
     if not text or not text.strip():
         raise RuntimeError(
             "Briefing model returned empty output. Check FIREWORKS_MODEL "
@@ -169,7 +170,7 @@ def write_explainer(scan_result: ScanResult, briefing: str) -> str:
     ]
     prompt = "\n".join(parts)
 
-    text = complete(prompt, max_tokens=1024, temperature=0.4)
+    text = complete(prompt, max_tokens=1024, temperature=0.4, reasoning_effort="low")
     if not text or not text.strip():
         raise RuntimeError(
             "Explainer model returned empty output. Check FIREWORKS_MODEL "

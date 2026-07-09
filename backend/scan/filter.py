@@ -95,7 +95,7 @@ def filter_findings(findings: list[Finding], category: str) -> list[Finding]:
     # keep-all, which would break demo reproducibility.
     results = None
     for attempt in range(1, 4):
-        text = complete(prompt, max_tokens=max_tokens, temperature=0.0)
+        text = complete(prompt, max_tokens=max_tokens, temperature=0.0, reasoning_effort="low")
         parsed = _extract_json(text)
         candidate = parsed.get("results") if isinstance(parsed, dict) else None
         if isinstance(candidate, list) and candidate:

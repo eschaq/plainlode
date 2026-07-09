@@ -49,7 +49,8 @@ def _extract_text(body: dict) -> str:
     return dumped if dumped.strip() else ""
 
 
-def complete(prompt: str, max_tokens: int = 512, temperature: float = TEMPERATURE) -> str:
+def complete(prompt: str, max_tokens: int = 512, temperature: float = TEMPERATURE,
+             reasoning_effort: str = None) -> str:
     """Send `prompt` to the cheap-tier Fireworks model and return its text.
 
     Raises on a missing key or model (setup problems). Returns "" if the request
@@ -79,6 +80,10 @@ def complete(prompt: str, max_tokens: int = 512, temperature: float = TEMPERATUR
         "temperature": temperature,
         "messages": [{"role": "user", "content": prompt}],
     }
+    # gpt-oss spends tokens (and wall-clock) reasoning before it answers. Lower
+    # effort cuts both, which matters for the scan's response-time gate.
+    if reasoning_effort:
+        payload["reasoning_effort"] = reasoning_effort
     try:
         resp = requests.post(ENDPOINT, headers=headers, json=payload,
                              timeout=TIMEOUT_SECONDS)
