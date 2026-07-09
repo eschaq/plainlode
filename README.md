@@ -2,8 +2,8 @@
 
 **The signal, mined plain.**
 
-A live market-intelligence engine that returns a plain-language decision — not a
-dashboard — for small WooCommerce owners.
+A live market-intelligence engine that returns a plain-language decision, not a
+dashboard, for small WooCommerce owners.
 
 **Live app:** https://plainlode-production.up.railway.app
 **Backend API:** https://web-production-a8e17.up.railway.app
@@ -12,7 +12,7 @@ dashboard — for small WooCommerce owners.
 
 ## Built for
 
-**AMD Developer Hackathon: ACT II — Track 3 (Unicorn).**
+**AMD Developer Hackathon: ACT II, Track 3 (Unicorn).**
 Plainlode runs its inference on **Fireworks AI, served on AMD Instinct GPUs.**
 Every scan makes two model calls on Fireworks/AMD: a cheap-tier scan filter and
 the plain-language briefing engine.
@@ -28,9 +28,9 @@ to stock, and the single live signal that would reverse that call.
 ```
 typed category
   → live demand pull        Scrapingdog Google Trends (interest-over-time)
-  → cheap-tier scan filter  Fireworks AI / AMD Instinct — keep decision-relevant terms
+  → cheap-tier scan filter  Fireworks AI / AMD Instinct, keep decision-relevant terms
   → slope-ranked findings   rising/falling by trend slope, with a volume floor
-  → briefing engine         Fireworks AI / AMD Instinct — Findings / Options / Recommended
+  → briefing engine         Fireworks AI / AMD Instinct, Findings / Options / Recommended
   → a decision              the call + the one live signal that would kill it
 ```
 
@@ -38,7 +38,7 @@ typed category
   come from a real-time Google Trends pull on each scan.
 - **Snapshot fallback.** If a live pull fails (rate limit, upstream hiccup),
   Plainlode serves the most recent *real* pull from disk and labels it a
-  snapshot. It never fabricates data — with no live data and no snapshot, it
+  snapshot. It never fabricates data. With no live data and no snapshot, it
   says so plainly.
 - **Volume floor.** Near-dead terms are held out of the ranking so noise can't
   masquerade as an opportunity.
@@ -46,20 +46,20 @@ typed category
 ## The novel behavior
 
 Plainlode's recommendation **argues against itself.** Every briefing ends by
-naming the one concrete, live signal that would reverse the call — the "kill
-signal" — so the owner knows exactly what to watch for, and when to stop.
+naming the one concrete, live signal that would reverse the call, the "kill
+signal," so the owner knows exactly what to watch for, and when to stop.
 
 ---
 
 ## Architecture
 
-- **Backend** — FastAPI (`backend/`). The scan engine lives in `backend/scan/`:
+- **Backend**: FastAPI (`backend/`). The scan engine lives in `backend/scan/`:
   live pull (`trends_client.py`), slope ranker (`ranker.py`), model filter
   (`filter.py`), briefing + explainer (`briefing.py`), orchestrator (`scan.py`),
   and the Fireworks HTTP client (`fireworks_client.py`).
-- **Frontend** — React + Vite (`frontend/`). Three states: input → scanning →
+- **Frontend**: React + Vite (`frontend/`). Three states: input → scanning →
   result.
-- **Deployment** — two services on Railway (backend + static frontend). See
+- **Deployment**: two services on Railway (backend + static frontend). See
   [DEPLOY.md](DEPLOY.md).
 
 The backend talks to Scrapingdog and Fireworks over plain HTTP, so the deployed
@@ -123,4 +123,4 @@ dedicated fine-tuned model is on the roadmap.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE).
