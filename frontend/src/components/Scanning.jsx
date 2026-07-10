@@ -1,11 +1,44 @@
 import { C } from "../lib/theme";
 
+// One row in the real-progress list: a pulsing gold dot while active, a gold
+// check when done, plus the stage label (dimmed once complete).
+function StageRow({ stage }) {
+  const done = stage.status === "done";
+  return (
+    <div
+      style={{ display: "flex", alignItems: "center", gap: 12, animation: "statusFade .4s ease both" }}
+    >
+      <span style={{ width: 16, display: "flex", justifyContent: "center", flex: "none" }}>
+        {done ? (
+          <span style={{ color: C.gold, fontSize: 14, lineHeight: 1 }}>✓</span>
+        ) : (
+          <span
+            style={{
+              width: 7,
+              height: 7,
+              borderRadius: "50%",
+              background: C.gold,
+              animation: "livePulse 1.2s ease-in-out infinite",
+            }}
+          />
+        )}
+      </span>
+      <span style={{ fontSize: 14.5, color: done ? C.muted : C.text }}>{stage.label}</span>
+      {stage.source && (
+        <span style={{ fontSize: 12, color: C.dim }}>· {stage.source}</span>
+      )}
+    </div>
+  );
+}
+
 // The scanning motion, ported from the design: five breathing tick lines, a
-// breathing central vein, and a glow that travels down it. This runs for the
-// real duration of the fetch — App keeps this view mounted until the request
-// promise settles, so the motion loops for exactly as long as the scan takes.
-export default function Scanning({ category, status, statusKey }) {
+// breathing central vein, and a glow that travels down it. It runs for the real
+// duration of the scan. Below it, real pipeline stages stream in via SSE
+// (`stages`); if streaming is unavailable, a single rotating status label
+// (`status`) is shown instead.
+export default function Scanning({ category, stages, status, statusKey }) {
   const tickDelays = [0, 0.3, 0.6, 0.9, 1.2];
+  const hasStages = Array.isArray(stages) && stages.length > 0;
 
   return (
     <div
@@ -83,18 +116,33 @@ export default function Scanning({ category, status, statusKey }) {
         </div>
       </div>
 
-      <div style={{ height: 26, marginTop: 18, textAlign: "center" }}>
+      {hasStages ? (
+        // Real pipeline progress from the SSE stream.
         <div
-          key={statusKey}
           style={{
-            fontSize: 16,
-            color: C.text,
-            animation: "statusFade .45s ease both",
+            marginTop: 8,
+            display: "flex",
+            flexDirection: "column",
+            gap: 11,
+            minHeight: 26,
+            width: "fit-content",
           }}
         >
-          {status}
+          {stages.map((s) => (
+            <StageRow key={s.key} stage={s} />
+          ))}
         </div>
-      </div>
+      ) : (
+        // Fallback: single rotating status label (used when SSE is unavailable).
+        <div style={{ height: 26, marginTop: 18, textAlign: "center" }}>
+          <div
+            key={statusKey}
+            style={{ fontSize: 16, color: C.text, animation: "statusFade .45s ease both" }}
+          >
+            {status}
+          </div>
+        </div>
+      )}
 
       <div
         style={{

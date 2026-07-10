@@ -81,8 +81,17 @@ def _append_run_log(result: ScanResult, seeds: list[str], category: str,
         print(f"[run_log] failed to write log entry: {exc}")
 
 
+def _short_source(source: str) -> str:
+    """Map the internal source to the short 'live'/'snapshot'/'none' for the UI."""
+    if source == "scrapingdog_live":
+        return "live"
+    if source == "scrapingdog_snapshot":
+        return "snapshot"
+    return "none"
+
+
 def run_scan(seeds: list[str], category: str, geo: str = "US",
-             seed_source: str = "request") -> ScanResult:
+             seed_source: str = "request", on_stage=None) -> ScanResult:
     """Run one scan end to end and return a ScanResult.
 
     Pull the seed terms' interest-over-time (live, with a snapshot fallback),
@@ -91,13 +100,30 @@ def run_scan(seeds: list[str], category: str, geo: str = "US",
     pull or a snapshot; `seed_source` records how the seeds were chosen (model /
     fallback / request) and is written to the run log. One line is appended to
     the run log per scan.
+
+    `on_stage`, if given, is called as each internal stage starts and completes
+    with a dict {stage, status, ...} — used to stream real progress. It never
+    changes the result and defaults to a no-op.
     """
+    def emit(stage, status, **extra):
+        if on_stage:
+            on_stage({"stage": stage, "status": status, **extra})
+
+    emit("demand", "start")
     series_list, source = fetch_with_snapshot(seeds, geo, key=category)
+    emit("demand", "done", source=_short_source(source))
+
+    emit("rank", "start")
     ranked = rank_findings(series_list)
     findings = filter_findings(ranked, category)
+    emit("rank", "done")
+
     # Parallel enrichment: attach Amazon supply signal to the top findings. Never
     # breaks the scan — a missing key / failure leaves findings demand-only.
+    emit("supply", "start")
     supply_source = _attach_supply(findings)
+    emit("supply", "done")
+
     result = ScanResult(
         geo=geo,
         pulled_at=datetime.now(timezone.utc).isoformat(),

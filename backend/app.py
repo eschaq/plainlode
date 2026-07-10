@@ -1,8 +1,10 @@
 """Minimal FastAPI backend exposing the Plainlode scan engine to a frontend.
 
 Endpoints:
-  POST /api/scan     run a scan + briefing for a category
-  GET  /api/health   liveness check
+  POST /api/scan          run a scan + briefing for a category (returns all at once)
+  GET  /api/scan/stream   same pipeline, streamed as SSE stage-by-stage
+  POST /api/explain       plain-English explainer for a produced briefing
+  GET  /api/health        liveness check
 
 Run from the repo root:
   uvicorn backend.app:app --reload
@@ -11,11 +13,15 @@ Env is read by the scan modules themselves (SCRAPINGDOG_API_KEY, FIREWORKS_*),
 so source .env before running: set -a; source .env; set +a
 """
 
+import json
 import os
+import queue
+import threading
 import time
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from backend.scan.briefing import write_briefing, write_explainer
@@ -70,32 +76,49 @@ def health():
     return {"status": "ok"}
 
 
-@app.post("/api/scan")
-def scan(req: ScanRequest):
-    """Run the scan and briefing. Returns as soon as the briefing is ready; the
-    explainer is a separate, slower call (POST /api/explain) so this stays under
-    the response-time gate."""
-    category = req.category.strip()
-    if not category:
-        raise HTTPException(status_code=400, detail="category is required")
+# UI labels for each pipeline stage, keyed by (stage, status). Kept here so the
+# data layer stays free of presentation strings; the streaming callback attaches
+# the label as each event flows through.
+STAGE_LABELS = {
+    ("seeds", "start"): "Finding products to watch",
+    ("seeds", "done"): "Found products to watch",
+    ("demand", "start"): "Pulling live demand",
+    ("demand", "done"): "Live demand pulled",
+    ("rank", "start"): "Ranking what's moving",
+    ("rank", "done"): "Ranked what's moving",
+    ("supply", "start"): "Checking live supply",
+    ("supply", "done"): "Live supply checked",
+    ("briefing", "start"): "Writing the briefing",
+    ("briefing", "done"): "Briefing written",
+}
 
-    # Stage timing so we can confirm what /api/scan actually runs. This path is
-    # scan + briefing ONLY; the explainer runs exclusively in /api/explain.
+
+def _scan_pipeline(category: str, seeds_override, on_stage=None) -> dict:
+    """Shared scan + briefing pipeline behind both /api/scan and the SSE stream.
+
+    Emits stage events via on_stage (seeds, demand, rank, supply, briefing).
+    Returns the response dict (same shape as POST /api/scan). Raises RuntimeError
+    if the briefing model step fails on real data; the caller decides how to
+    surface it (502 for POST, an error event for the stream).
+    """
+    def emit(stage, status, **extra):
+        if on_stage:
+            on_stage({"stage": stage, "status": status, **extra})
+
     t_start = time.perf_counter()
 
-    # Seeds: use the caller's if given, otherwise generate from the category with
-    # the cheap-tier model (static helper as fallback — never breaks the scan).
-    t_seed0 = time.perf_counter()
-    if req.seeds:
-        seeds, seed_source = req.seeds, "request"
+    # Seeds: caller's if given, else generate from the category (fallback helper
+    # never breaks the scan).
+    emit("seeds", "start")
+    if seeds_override:
+        seeds, seed_source = seeds_override, "request"
     else:
         seeds, seed_source = generate_seeds(category)
-    t_seed = time.perf_counter() - t_seed0
+    emit("seeds", "done")
 
-    t0 = time.perf_counter()
-    result: ScanResult = run_scan(seeds, category, seed_source=seed_source)  # called exactly once
-    t_scan = time.perf_counter() - t0
-    result.category = category  # the briefing renderer needs the category
+    # run_scan emits demand / rank / supply stages internally.
+    result: ScanResult = run_scan(seeds, category, seed_source=seed_source, on_stage=on_stage)
+    result.category = category
 
     above = sorted((f for f in result.findings if not f.low_volume),
                    key=lambda f: f.rank)
@@ -106,20 +129,13 @@ def scan(req: ScanRequest):
     has_data = result.source != NO_DATA_SOURCE and bool(above)
 
     briefing = None
-    t_brief = 0.0
     if has_data:
-        try:
-            t1 = time.perf_counter()
-            briefing = write_briefing(result)  # called exactly once
-            t_brief = time.perf_counter() - t1
-        except RuntimeError as exc:
-            # Briefing is the product; if the model step fails, surface it.
-            raise HTTPException(status_code=502, detail=str(exc))
+        emit("briefing", "start")
+        briefing = write_briefing(result)  # may raise RuntimeError
+        emit("briefing", "done")
 
-    total = time.perf_counter() - t_start
-    print(f"[/api/scan] category={category!r} seeds={seed_source}({t_seed:.1f}s) "
-          f"run_scan={t_scan:.1f}s write_briefing={t_brief:.1f}s total={total:.1f}s "
-          "(no explainer on this path)")
+    print(f"[scan] category={category!r} seeds={seed_source} source={result.source} "
+          f"has_data={has_data} total={time.perf_counter() - t_start:.1f}s")
 
     return {
         "category": category,
@@ -130,6 +146,63 @@ def scan(req: ScanRequest):
         "below_floor": [_finding_dict(f) for f in below],
         "briefing": briefing,
     }
+
+
+@app.post("/api/scan")
+def scan(req: ScanRequest):
+    """Run the scan and briefing, returning the full result at once. The explainer
+    is a separate, slower call (POST /api/explain). Kept as the fallback for the
+    SSE stream below."""
+    category = req.category.strip()
+    if not category:
+        raise HTTPException(status_code=400, detail="category is required")
+    try:
+        return _scan_pipeline(category, req.seeds)
+    except RuntimeError as exc:
+        # Briefing is the product; if the model step fails, surface it.
+        raise HTTPException(status_code=502, detail=str(exc))
+
+
+@app.get("/api/scan/stream")
+def scan_stream(category: str):
+    """Stream real scan progress as Server-Sent Events. Emits one JSON event per
+    stage (start + done), then a final {"stage":"complete","result":...} whose
+    result has the same shape as POST /api/scan."""
+    category = (category or "").strip()
+    if not category:
+        raise HTTPException(status_code=400, detail="category is required")
+
+    events: "queue.Queue" = queue.Queue()
+    DONE = object()
+
+    def on_stage(ev: dict):
+        ev = dict(ev)
+        ev["label"] = STAGE_LABELS.get((ev.get("stage"), ev.get("status")), "")
+        events.put(ev)
+
+    def worker():
+        try:
+            result = _scan_pipeline(category, None, on_stage=on_stage)
+            events.put({"stage": "complete", "result": result})
+        except Exception as exc:  # stream an error rather than crash the request
+            events.put({"stage": "error", "detail": str(exc)})
+        finally:
+            events.put(DONE)
+
+    threading.Thread(target=worker, daemon=True).start()
+
+    def event_source():
+        while True:
+            ev = events.get()
+            if ev is DONE:
+                break
+            yield f"data: {json.dumps(ev)}\n\n"
+
+    return StreamingResponse(
+        event_source(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 @app.post("/api/explain")
