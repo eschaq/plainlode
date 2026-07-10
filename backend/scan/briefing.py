@@ -36,14 +36,26 @@ SYSTEM = (
     "for example a seasonal peak, a competitor entering, a supply or price "
     "change, or a related term overtaking this one. Do not merely restate that "
     "the trend could flatten or fall. Be specific and grounded in the category. "
-    "Some signals include supply data from Amazon (product count, price range, "
-    "average rating). When a term shows supply data, reason over BOTH demand and "
-    "supply: a rising term with thin or expensive supply is a strong opening; a "
-    "rising term with saturated, cheap, well-rated supply is crowded and needs a "
-    "differentiated angle such as a bundle, higher quality, or a niche; a falling "
-    "term gets cleared regardless of its supply. When supply data is present, let "
-    "the Recommended call and the kill signal reflect this demand-meets-supply "
-    "read. If a term has no supply data, judge it on demand alone. "
+    "Some signals include supply data from Amazon (product count as saturation, "
+    "price range, average rating). Read the product count as the saturation "
+    "level: tens of thousands of products or more is a saturated, crowded market; "
+    "a few thousand or fewer is thin and open. So 130,000 products is heavily "
+    "saturated, not open. Supply is a decision input, not a footnote. "
+    "When a term shows supply data, the Recommended action must explicitly reflect "
+    "the supply read, not demand alone. If demand is rising AND supply is thin, "
+    "expensive, or poorly rated, that is a real opening: recommend stocking it "
+    "aggressively. If demand is rising BUT supply is saturated, cheap, and well "
+    "rated, the market is crowded, so do not say to just stock it. Pivot the call "
+    "to differentiation or caution instead: a distinctive bundle, higher quality, "
+    "a specific niche, or a targeted margin play, competing on angle rather than "
+    "price. Supply can override the naive demand call. State the supply read in "
+    "Findings as its own insight (is the market open or saturated), not a trailing "
+    "clause. Every Option must be specific to this exact demand-and-supply "
+    "situation and name a concrete move; never write generic boilerplate like "
+    "stock the best sellers and highlight them. A falling term gets cleared "
+    "regardless of supply. The kill signal may be supply-aware, for example a new "
+    "low-price competitor or supply thinning out. If a term has no supply data, "
+    "judge it on demand alone. "
     "Ground everything in the signal you are given. No em dashes. No hype."
 )
 
@@ -170,13 +182,24 @@ def write_briefing(scan_result: ScanResult) -> str:
     # Cap at 700 with low reasoning effort: enough for the three sections, and it
     # bounds generation time so the scan stays comfortably under the gate. Low
     # effort is what makes 700 sufficient — otherwise gpt-oss spends the budget
-    # reasoning and truncates the briefing. The 12s timeout means a Fireworks slow
-    # spell fails fast (raises -> 502) rather than hanging up to the old 45s.
-    text = complete(prompt, max_tokens=700, temperature=0.3, reasoning_effort="low", timeout=12)
+    # reasoning and truncates the briefing. Each call is capped at 12s, and we
+    # retry once (2 attempts, worst case 24s) so a transient Fireworks timeout on
+    # the first attempt retries rather than failing the whole request.
+    text = ""
+    for attempt in range(1, 3):
+        text = complete(prompt, max_tokens=700, temperature=0.3,
+                        reasoning_effort="low", timeout=12)
+        if text and text.strip():
+            if attempt > 1:
+                print(f"[briefing] model output OK on attempt {attempt}/2")
+            break
+        print(f"[briefing] attempt {attempt}/2 returned empty output")
+
+    # Fail loud only after both attempts fail — never serve fabricated output.
     if not text or not text.strip():
         raise RuntimeError(
-            "Briefing model returned empty output. Check FIREWORKS_MODEL "
-            "(serverless gpt-oss) and the API key, then retry."
+            "Briefing model returned empty output after 2 attempts. Check "
+            "FIREWORKS_MODEL (serverless gpt-oss) and the API key, then retry."
         )
     # Echo strip first (some runs prepend the signal block), then the dash guard
     # so the briefing holds the no-dash brand rule too.
