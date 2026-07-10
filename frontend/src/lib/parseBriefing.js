@@ -68,14 +68,17 @@ function splitRecommended(raw) {
   const t = raw.replace(/\s+/g, " ").trim();
 
   // The kill signal is the sentence naming what would reverse/kill the call.
-  // Find the first sentence mentioning kill/reverse together with call/signal;
-  // everything from there is the kill-signal block.
+  // Match kill/reverse as STEMS (not exact words) so every phrasing lands:
+  //   "the call is killed", "kill signal", "would reverse this call",
+  //   "the signal that would reverse", "reverses/reversed/reversing/reversal".
+  // Pair it with a call/signal/this reference to avoid stray matches; everything
+  // from that sentence on becomes the kill-signal block.
   const sentences = t.match(/[^.!?]+[.!?]*/g) || [t];
   let killIdx = -1;
   for (let i = 0; i < sentences.length; i++) {
     if (
-      /\b(kill|reverse|reverses|reversal)\b/i.test(sentences[i]) &&
-      /\b(call|signal|this)\b/i.test(sentences[i])
+      /\b(kill|revers)/i.test(sentences[i]) &&
+      /\b(call|signal|this|it)\b/i.test(sentences[i])
     ) {
       killIdx = i;
       break;
