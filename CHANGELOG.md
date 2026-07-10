@@ -51,3 +51,11 @@ Time: ~[fill in] hrs.
 3. Frontend (masked spin-up) + Railway deploy.
 
 Time: ~[fill in] hrs.
+
+## 2026-07-09 late (day 4 cont.) — supply reasoning + fixes
+- Fixed frontend briefing parser (sections collapsing, markdown leaking).
+- OPENWEBNINJA_API_KEY added to Railway backend (supply was demand-only in prod).
+- Supply now DRIVES the call: saturated market -> differentiate/bundle, not "stock more." Sharp options.
+- Briefing retry (2x12s) for Fireworks slow spells; fail-loud after both.
+- Fixed kill-signal parser to match phrasing variations; renders in its own block again.
+- Social drafted (two-source + kill-signal), queued for tomorrow AM.
