@@ -179,26 +179,26 @@ def write_briefing(scan_result: ScanResult) -> str:
     signal_block = _render_signal_block(scan_result)
     prompt = _build_prompt(signal_block, _load_fewshot())
 
-    # Cap at 700 with low reasoning effort: enough for the three sections, and it
-    # bounds generation time so the scan stays comfortably under the gate. Low
+    # Cap at 700 with low reasoning effort: enough for the three sections. Low
     # effort is what makes 700 sufficient — otherwise gpt-oss spends the budget
-    # reasoning and truncates the briefing. Each call is capped at 12s, and we
-    # retry once (2 attempts, worst case 24s) so a transient Fireworks timeout on
-    # the first attempt retries rather than failing the whole request.
+    # reasoning and truncates the briefing. The briefing is the product, so under
+    # Fireworks congestion we favor completion over speed: retry up to 3 times at
+    # 15s each (worst case 45s) before failing. The scan pull/filter timeouts are
+    # left tight; only the briefing trades latency for reliability.
     text = ""
-    for attempt in range(1, 3):
+    for attempt in range(1, 4):
         text = complete(prompt, max_tokens=700, temperature=0.3,
-                        reasoning_effort="low", timeout=12)
+                        reasoning_effort="low", timeout=15)
         if text and text.strip():
             if attempt > 1:
-                print(f"[briefing] model output OK on attempt {attempt}/2")
+                print(f"[briefing] model output OK on attempt {attempt}/3")
             break
-        print(f"[briefing] attempt {attempt}/2 returned empty output")
+        print(f"[briefing] attempt {attempt}/3 returned empty output")
 
-    # Fail loud only after both attempts fail — never serve fabricated output.
+    # Fail loud only after all 3 attempts fail — never serve fabricated output.
     if not text or not text.strip():
         raise RuntimeError(
-            "Briefing model returned empty output after 2 attempts. Check "
+            "Briefing model returned empty output after 3 attempts. Check "
             "FIREWORKS_MODEL (serverless gpt-oss) and the API key, then retry."
         )
     # Echo strip first (some runs prepend the signal block), then the dash guard
