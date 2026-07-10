@@ -25,12 +25,13 @@ ENDPOINT = "https://api.scrapingdog.com/google_trends"
 MAX_QUERIES_PER_CALL = 5
 # Read timeout for a single live pull. Kept short so a slow Trends response
 # fails fast and falls to a retry or the snapshot, rather than hanging the scan.
-TIMEOUT_SECONDS = 12
+TIMEOUT_SECONDS = 8
 # Scrapingdog's Trends upstream is occasionally flaky (transient non-200s like a
 # 400 "please try again", or a 403 from a concurrency/upstream hiccup on a funded
-# account). Retry the live pull a few times before giving up and serving the
-# snapshot.
-MAX_LIVE_ATTEMPTS = 3        # 1 initial attempt + up to 2 retries
+# account). Retry once, then serve the snapshot. Worst case for the live pull is
+# 2 x 8s = 16s before falling back (plus one short retry delay), keeping the scan
+# under the response-time gate even during a Scrapingdog slow spell.
+MAX_LIVE_ATTEMPTS = 2        # 1 initial attempt + 1 retry
 RETRY_DELAY_SECONDS = 1.5    # short pause between live-pull retries
 
 # Snapshot fallback: real prior pulls cached to disk so the demo survives when
